@@ -1,0 +1,22 @@
+[
+  {
+    "name": "USD",
+    "symbol": "USD",
+    "label": "USD"
+  },
+  {
+    "name": "HUF",
+    "symbol": "HUF",
+    "label": "HUF"
+  },
+  {
+    "name": "EUR",
+    "symbol": "EUR",
+    "label": "EUR"
+  },
+  {
+    "name": "RUB",
+    "symbol": "RUB",
+    "label": "RUB"
+  }
+]

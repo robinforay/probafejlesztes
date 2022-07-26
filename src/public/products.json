@@ -1,0 +1,34 @@
+[
+    {
+        "id": "5fef84f891012",
+        "name": "American Original '50s Telecaster\u00ae",
+        "brand": "Fender",
+        "price": 649900,
+        "quantity": 1,
+        "imageURL": "https:\/\/www.fmicassets.com\/Damroot\/GuitarVertDesktopJpg\/10002\/0110132850_gtr_frt_001_rr.jpg"
+    },
+    {
+        "id": "5fef84f891013",
+        "name": "Troublemaker Telecaster\u00ae",
+        "brand": "Fender",
+        "price": 469990,
+        "quantity": 3,
+        "imageURL": "https:\/\/www.fmicassets.com\/Damroot\/GuitarVertDesktopJpg\/10001\/5300100338_gtr_frt_001_rr.jpg"
+    },
+    {
+        "id": "5fef84f891014",
+        "name": "PM-2 Standard Parlor, Natural",
+        "brand": "Fender",
+        "price": 217500,
+        "quantity": 8,
+        "imageURL": "https:\/\/www.fmicassets.com\/Damroot\/GuitarVertDesktopJpg\/10001\/0970322321_gtr_frt_001_rr.jpg"
+    },
+    {
+        "id": "5fef84f891015",
+        "name": "Steve Vai Signature JEM77 - Blue Floral Pattern",
+        "brand": "Ibanez",
+        "price": 474775,
+        "quantity": 2,
+        "imageURL": "https:\/\/media.sweetwater.com\/api\/i\/f-webp__q-85__ha-9a297ded42d50889__hmac-ea43dca50b7d9e5be6ad93b62b85d8379d251d3d\/images\/closeup\/xl\/1600-JEM77PBFP_front.jpg.auto.webp"
+    }
+]
