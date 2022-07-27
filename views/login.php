@@ -2,7 +2,17 @@
     <div class="jumbotron text-center">
         <h2>A tartalom megtekintéséhez bejelentkezés szükséges</h2>
     </div>
-</div>
+
+<?php if ($params['sikerreg']) : ?>
+            <div class="alert alert-success">
+                Regisztráció sikeres!
+            </div>
+        <?php endif ?>
+        <?php if ($params['sikerlog']) : ?>
+            <div class="alert alert-success">
+                Sikeres bejelentkezés!
+            </div>
+        <?php endif ?>
 <form action="/login" method="POST">
     <label class="w-100">
         Email cím:
@@ -28,3 +38,4 @@
     </label>
     <button type="submit" class="btn btn-success form-control">Regisztráció</button>
 </form>
+</div>

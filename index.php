@@ -16,8 +16,7 @@ $routes = [  // útvonalválasztó létrehozása
         '/orszag-megtekintese' => 'singleCountryHandler',
         '/varos-megtekintese' => 'singleCityHandler',
         '/nyelvek-megtekintese' => 'languagesHandler',
-        '/register' => 'registrationHandler',
-        '/login' => 'loginHandler'
+        '/reglog' => 'reglogHandler'    
     ],
     "POST" => [
         "/delete-product" => "deleteProductHandler",
@@ -40,6 +39,21 @@ function compileTemplate($filePath, $params = []): string
     require __DIR__ . "/views/" . $filePath;
     return ob_get_clean();
 };
+
+function isLoggedIn(): bool
+{
+    if (!isset($_COOKIE[session_name()])) { 
+        return false; 
+    }
+
+    session_start();
+
+    if (!isset($_SESSION['userId'])) { 
+        return false; 
+    }
+
+    return true;
+}
 
 function homeHandler()
 {
@@ -83,7 +97,20 @@ function productListHandler()
 };
 
 function exchangeHandler()
-{
+{   
+    if(!isLoggedIn()) {
+        $sikerreg = isset($_GET['sikerreg']);
+        $sikerlog = isset($_GET['sikerlog']);
+        $registerTemplate = compileTemplate('./login.php' ,[
+        'sikerreg' => $sikerreg,
+        'sikerlog' => $sikerlog]);
+    echo compileTemplate("./wrapper.php", [
+        'innerTemplate' => $registerTemplate,
+        'activeLink' => '/register'
+    ]);
+        return;
+    }
+
     $value = $_GET['mennyit'] ?? 1;
     $sourceCurrency = $_GET['mirol'] ?? "USD";
     $targetCurrency = $_get['mire'] ?? "HUF";
@@ -107,7 +134,7 @@ function exchangeHandler()
 };
 
 function createProductHandler()
-{
+{   
     $newProduct = [
         "id" => uniqid(),
         "name" => $_POST['name'],
@@ -281,13 +308,7 @@ function registrationHandler()
         time()
     ]);
 
-    header('Location: /');
-
-    $registerTemplate = compileTemplate('./login.php');
-    echo compileTemplate("./wrapper.php", [
-        'innerTemplate' => $registerTemplate,
-        'activeLink' => '/register'
-    ]);
+    header('Location: /reglog?sikerreg=1');
 
 // INSERT INTO `users` (`id`, `email`, `password`, `createdAt`) VALUES (NULL, 'peldaemail@email.hu', 'password', '123');
 }
@@ -303,12 +324,28 @@ function loginHandler()
         echo "invalidCredentials";
         return;
     }
+    $isVerified = password_verify($_POST['password'], $user["password"]);
+    if(!$isVerified) {
+        echo "invalidCredentials";
+        return;
+    }
+    session_start();  
+    $_SESSION['userId'] = $user['id']; 
+    
 
-    echo "<pre>";
-    var_dump($user);
+    header('Location: /reglog?sikerlog=1');
 
-    $registerTemplate = compileTemplate('./login.php');
+}
+
+function reglogHandler()
+{
+    $sikerreg = isset($_GET['sikerreg']);
+    $sikerlog = isset($_GET['sikerlog']);
+    $registerTemplate = compileTemplate('./login.php' ,[
+        'sikerreg' => $sikerreg,
+        'sikerlog' => $sikerlog]);
     echo compileTemplate("./wrapper.php", [
         'innerTemplate' => $registerTemplate,
-        'activeLink' => '/register']);
+        'activeLink' => '/register'
+    ]);
 }

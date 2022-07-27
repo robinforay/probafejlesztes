@@ -1,4 +1,4 @@
-    <div class="">
+    <div class="card p-3 m-2">
         <?php if ($params['isSucces']) : ?>
             <div class="alert alert-success">
                 Termék létrehozása sikeres!

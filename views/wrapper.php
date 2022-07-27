@@ -25,7 +25,7 @@
       <li><a class="menu__item" <?php echo $params['activeLink'] === "/termekek" ? "active" : "" ?> href="/termekek">Termékek</a></li>
       <li><a class="menu__item" <?php echo $params['activeLink'] === "/penzvalto" ? "active" : "" ?> href="/penzvalto">Pénzváltó</a></li>
       <li><a class="menu__item" <?php echo $params['activeLink'] === "/orszagok" ? "active" : "" ?> href="/orszagok">Országok listája</a></li>
-      <li><a class="menu__item" <?php echo $params['activeLink'] === "/register" ? "active" : "" ?> href="/register">Bejelentkezés</a></li>
+      <li><a class="menu__item" <?php echo $params['activeLink'] === "/reglog" ? "active" : "" ?> href="/reglog">Bejelentkezés</a></li>
     </ul>
   </div>
   </nav>
