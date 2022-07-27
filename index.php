@@ -15,12 +15,16 @@ $routes = [  // útvonalválasztó létrehozása
         "/orszagok" => "countryListHandler",
         '/orszag-megtekintese' => 'singleCountryHandler',
         '/varos-megtekintese' => 'singleCityHandler',
-        '/nyelvek-megtekintese' => 'languagesHandler'
+        '/nyelvek-megtekintese' => 'languagesHandler',
+        '/register' => 'registrationHandler',
+        '/login' => 'loginHandler'
     ],
     "POST" => [
         "/delete-product" => "deleteProductHandler",
         "/termekek" => "createProductHandler",
-        "/update-product" => "updatedProductHandler"
+        "/update-product" => "updatedProductHandler",
+        '/register' => 'registrationHandler',
+        '/login' => 'loginHandler'
     ]
 ];
 
@@ -203,7 +207,7 @@ function singleCountryHandler()
     $statement = $pdo->prepare('SELECT * FROM `cities` WHERE countryId = ?'); 
     $statement->execute([$countryId]);
     $cities = $statement->fetchAll(PDO::FETCH_ASSOC);
-
+    
     $citiesTemplate = compileTemplate('./varosok.php', [
         'country' => $country,
         'cities' => $cities]);
@@ -264,4 +268,47 @@ function getConnection()
     );
 }
 
+function registrationHandler()
+{
+    $pdo = getConnection();
+    $statment = $pdo->prepare(
+        "INSERT INTO `users` (`email`, `password`, `createdAt`) 
+        VALUES (?, ?, ?);"
+    );
+    $statment->execute([
+        $_POST["email"],
+        password_hash($_POST["password"], PASSWORD_DEFAULT),
+        time()
+    ]);
 
+    header('Location: /');
+
+    $registerTemplate = compileTemplate('./login.php');
+    echo compileTemplate("./wrapper.php", [
+        'innerTemplate' => $registerTemplate,
+        'activeLink' => '/register'
+    ]);
+
+// INSERT INTO `users` (`id`, `email`, `password`, `createdAt`) VALUES (NULL, 'peldaemail@email.hu', 'password', '123');
+}
+
+function loginHandler()
+{
+    $pdo = getConnection();
+    $statement = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+    $statement->execute([$_POST["email"]]);
+    $user = $statement->fetch(PDO::FETCH_ASSOC);
+
+    if(!$user) {
+        echo "invalidCredentials";
+        return;
+    }
+
+    echo "<pre>";
+    var_dump($user);
+
+    $registerTemplate = compileTemplate('./login.php');
+    echo compileTemplate("./wrapper.php", [
+        'innerTemplate' => $registerTemplate,
+        'activeLink' => '/register']);
+}
