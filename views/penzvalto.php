@@ -1,6 +1,6 @@
 
     <body>
-        <div class="">
+        <div class="card p-3 m-2">
         <form method="get">
         <?php echo $params['vegeredmeny'] ?><br>
     <input class="input-group input-group-sm mb-3" name="mennyit" type="number" value="<?php echo $value ?? 1 ?>"></input><br>

@@ -11,25 +11,34 @@
   <title>Web</title>
 </head>
 
-<body>
+<body><div>
   <img class="headerimg" src="https://i.postimg.cc/wT3TQS3V/header-image2.jpg" width="100%" height="100" alt="">
-
+  
+  
+  <div class="top-right">
+  <?php if($params['isAuthorized']): ?>
+  <form action="/logout" method="POST">
+  <button type="submit" class="btn btn-sm btn-danger m-2">Kijelentkezés</button>
+        </form></div>
+        <?php endif; ?>
+      </div>
+  
   <div class="hamburger-menu">
     <input id="menu__toggle" type="checkbox" />
     <label class="menu__btn" for="menu__toggle">
       <span></span>
     </label>
-    <?php echo $params["innerTemplate"] ?>
+    <?php echo $params["content"] ?>
     <ul class="menu__box">
-      <li><a class="menu__item" <?php echo $params['activeLink'] === "/" ? "active" : "" ?> href="/">Főoldal</a></li>
-      <li><a class="menu__item" <?php echo $params['activeLink'] === "/termekek" ? "active" : "" ?> href="/termekek">Termékek</a></li>
-      <li><a class="menu__item" <?php echo $params['activeLink'] === "/penzvalto" ? "active" : "" ?> href="/penzvalto">Pénzváltó</a></li>
-      <li><a class="menu__item" <?php echo $params['activeLink'] === "/orszagok" ? "active" : "" ?> href="/orszagok">Országok listája</a></li>
-      <li><a class="menu__item" <?php echo $params['activeLink'] === "/reglog" ? "active" : "" ?> href="/reglog">Bejelentkezés</a></li>
+      <li><a class="menu__item"  href="/">Főoldal</a></li>
+      <li><a class="menu__item"  href="/termekek">Termékek</a></li>
+      <li><a class="menu__item"  href="/penzvalto">Pénzváltó</a></li>
+      <li><a class="menu__item"  href="/orszagok">Országok listája</a></li>
+      <li><a class="menu__item"  href="/reglog">Bejelentkezés</a></li>
     </ul>
   </div>
   </nav>
-
+  
   <footer>
         <div class="text-center p-3">
             <img class="footerlogo" src="./public/rd.png" alt="footerlogo">

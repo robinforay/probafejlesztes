@@ -14,16 +14,18 @@
                 Termék sikeresen kitörölve!
             </div>
         <?php endif ?>
-        <form action="/termekek" method="POST">
+        <?php if (isLoggedIn()) : ?><form action="/termekek" method="POST">
             <input type="text" name="name" placeholder="Név" />
             <input type="number" name="price" placeholder="Ár" />
             <input type="text" name="imageURL" placeholder="KépLink" />
             <button class="btn btn-success" type="submit">Küldés</button>
         </form>
+        <?php endif; ?>
         <?php foreach ($params['products'] as $product) : ?>
             <h3><?php echo $product['name'] ?></h3>
             <p><?php echo "<img src=" . $product['imageURL'] . " width='50px' />" ?>
             <p><?php echo $product['price'] . " Ft" ?></p>
+            
             <?php if ($params["updatedProductId"] === $product["id"]) : ?>
 
                 <form class="form-inline form-group" action="/update-product?id=<?php echo $product["id"] ?>" method="post">
@@ -37,9 +39,11 @@
 
                     <button type="submit" class="btn btn-success">Küldés</button>
                 </form>
-
+                
+                
             <?php else : ?>
                 <div class="btn-group">
+                <?php if (isLoggedIn()) : ?>
                     <a href="/termekek?szerkesztes=<?php echo $product["id"] ?>">
                         <button class="btn btn-warning mr-2">Szerkesztés</button>
                     </a>
@@ -47,6 +51,7 @@
                     <form action="/delete-product?id=<?php echo $product["id"] ?>" method="post">
                         <button type="submit" class="btn btn-danger">Törlés</button>
                     </form>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
             <hr>

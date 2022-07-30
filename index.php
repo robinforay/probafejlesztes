@@ -16,14 +16,15 @@ $routes = [  // útvonalválasztó létrehozása
         '/orszag-megtekintese' => 'singleCountryHandler',
         '/varos-megtekintese' => 'singleCityHandler',
         '/nyelvek-megtekintese' => 'languagesHandler',
-        '/reglog' => 'reglogHandler'    
+        '/reglog' => 'reglogHandler'
     ],
     "POST" => [
         "/delete-product" => "deleteProductHandler",
         "/termekek" => "createProductHandler",
         "/update-product" => "updatedProductHandler",
         '/register' => 'registrationHandler',
-        '/login' => 'loginHandler'
+        '/login' => 'loginHandler',
+        '/logout' => 'logoutHandler'
     ]
 ];
 
@@ -40,36 +41,41 @@ function compileTemplate($filePath, $params = []): string
     return ob_get_clean();
 };
 
-function isLoggedIn(): bool
-{
-    if (!isset($_COOKIE[session_name()])) { 
-        return false; 
+function getPathWithId($url) { 
+    $parsed = parse_url($url);
+    if(!isset($parsed['query'])) {
+        return $url;
     }
-
-    session_start();
-
-    if (!isset($_SESSION['userId'])) { 
-        return false; 
-    }
-
-    return true;
+    $queryParams = []; 
+    parse_str($parsed['query'], $queryParams);
+    return $parsed['path'] . "?id=" . $queryParams['id'];
 }
 
 function homeHandler()
 {
-
     $homeTemplate = compileTemplate('./home.php');
     echo compileTemplate('./wrapper.php', [
-        'innerTemplate' => $homeTemplate,
-        'activeLink' => '/'
+        'content' => $homeTemplate,
+        'isAuthorized' => isLoggedIn()
     ]);
 };
 
 function notFoundHandler()
-{
+{   
+    if (!isLoggedIn()) {  
+        echo compileTemplate("wrapper.php", [ 
+            'content' => compileTemplate('login.php', [
+                'info' => $_GET['info'] ?? '',
+                'isRegistration' => isset($_GET['isRegistration']),
+                'url' => getPathWithId($_SERVER['REQUEST_URI']), 
+            ]),  
+            'isAuthorized' => false,
+        ]);
+        return;
+    }
     echo compileTemplate('./wrapper.php', [
-        'innerTemplate' => "Oldal nem található 404",
-        'activeLink' => ''
+        'content' => "Oldal nem található 404",
+        'isAuthorized' => true,
     ]);
 };
 
@@ -87,27 +93,26 @@ function productListHandler()
         'products' => $products,
         'isDeleted' => $isDeleted,
         'szerkeszt' => $szerkeszt,
-        "updatedProductId" => $_GET["szerkesztes"] ?? ""
+        "updatedProductId" => $_GET["szerkesztes"] ?? "",
     ]);
 
     echo compileTemplate('./wrapper.php', [
-        'innerTemplate' => $productlistTemplate,
-        'activeLink' => '/termekek',
+        'content' => $productlistTemplate,
+        'isAuthorized' => isLoggedIn()
     ]);
 };
 
 function exchangeHandler()
-{   
-    if(!isLoggedIn()) {
-        $sikerreg = isset($_GET['sikerreg']);
-        $sikerlog = isset($_GET['sikerlog']);
-        $registerTemplate = compileTemplate('./login.php' ,[
-        'sikerreg' => $sikerreg,
-        'sikerlog' => $sikerlog]);
-    echo compileTemplate("./wrapper.php", [
-        'innerTemplate' => $registerTemplate,
-        'activeLink' => '/register'
-    ]);
+{
+    if (!isLoggedIn()) {  
+        echo compileTemplate("wrapper.php", [ 
+            'content' => compileTemplate('login.php', [
+                'info' => $_GET['info'] ?? '',
+                'isRegistration' => isset($_GET['isRegistration']),
+                'url' => getPathWithId($_SERVER['REQUEST_URI']), 
+            ]),  
+            'isAuthorized' => false,
+        ]);
         return;
     }
 
@@ -128,13 +133,13 @@ function exchangeHandler()
     ]);
 
     echo compileTemplate('./wrapper.php', [
-        'innerTemplate' => $exchangeTemplate,
-        'activeLink' => '/penzvalto'
+        'content' => $exchangeTemplate,
+        'isAuthorized' => true,
     ]);
 };
 
 function createProductHandler()
-{   
+{
     $newProduct = [
         "id" => uniqid(),
         "name" => $_POST['name'],
@@ -207,6 +212,17 @@ function updatedProductHandler()
 
 function countryListHandler()
 {
+    if (!isLoggedIn()) {  
+        echo compileTemplate("wrapper.php", [ 
+            'content' => compileTemplate('login.php', [
+                'info' => $_GET['info'] ?? '',
+                'isRegistration' => isset($_GET['isRegistration']),
+                'url' => getPathWithId($_SERVER['REQUEST_URI']), 
+            ]),  
+            'isAuthorized' => false,
+        ]);
+        return;
+    }
     $pdo = getConnection();
 
     $statement = $pdo->prepare('SELECT * FROM `countries`');
@@ -215,37 +231,60 @@ function countryListHandler()
 
     $countryTemplate = compileTemplate('./orszagok.php', [
         'countries' => $countries,
-        
+
     ]);
     echo compileTemplate('./wrapper.php', [
-        'innerTemplate' => $countryTemplate,
-        'activeLink' => '/orszagok'
+        'content' => $countryTemplate,
+        'isAuthorized' => true,
     ]);
 }
 
 function singleCountryHandler()
-{
+{   
+    if (!isLoggedIn()) {  
+        echo compileTemplate("wrapper.php", [ 
+            'content' => compileTemplate('login.php', [
+                'info' => $_GET['info'] ?? '',
+                'isRegistration' => isset($_GET['isRegistration']),
+                'url' => getPathWithId($_SERVER['REQUEST_URI']), 
+            ]),  
+            'isAuthorized' => false,
+        ]);
+        return;
+    }
     $countryId = $_GET['id'] ?? '';
     $pdo = getConnection();
     $statement = $pdo->prepare('SELECT * FROM countries WHERE id = ?');
     $statement->execute([$countryId]);
     $country = $statement->fetch(PDO::FETCH_ASSOC);
-    
-    $statement = $pdo->prepare('SELECT * FROM `cities` WHERE countryId = ?'); 
+
+    $statement = $pdo->prepare('SELECT * FROM `cities` WHERE countryId = ?');
     $statement->execute([$countryId]);
     $cities = $statement->fetchAll(PDO::FETCH_ASSOC);
-    
+
     $citiesTemplate = compileTemplate('./varosok.php', [
         'country' => $country,
-        'cities' => $cities]);
-        echo compileTemplate('./wrapper.php', [
-            'innerTemplate' => $citiesTemplate,
-            'activeLink' => '/orszag-megtekintese'
-        ]);
+        'cities' => $cities
+    ]);
+    echo compileTemplate('./wrapper.php', [
+        'content' => $citiesTemplate,
+        'isAuthorized' => true,
+    ]);
 }
 
 function singleCityHandler()
 {
+    if (!isLoggedIn()) {  
+        echo compileTemplate("wrapper.php", [ 
+            'content' => compileTemplate('login.php', [
+                'info' => $_GET['info'] ?? '',
+                'isRegistration' => isset($_GET['isRegistration']),
+                'url' => getPathWithId($_SERVER['REQUEST_URI']), 
+            ]),  
+            'isAuthorized' => false,
+        ]);
+        return;
+    }
     $cityId = $_GET['id'] ?? '';
     $pdo = getConnection();
     $statement = $pdo->prepare('SELECT * FROM cities WHERE id = ?');
@@ -253,15 +292,27 @@ function singleCityHandler()
     $city = $statement->fetch(PDO::FETCH_ASSOC);
 
     $cityTemplate = compileTemplate('./varos.php', [
-        'city' => $city]);
-        echo compileTemplate('./wrapper.php', [
-            'innerTemplate' => $cityTemplate,
-            'activeLink' => '/varos-megtekintese'
-        ]);
+        'city' => $city
+    ]);
+    echo compileTemplate('./wrapper.php', [
+        'content' => $cityTemplate,
+        'isAuthorized' => true,
+    ]);
 }
 
 function languagesHandler()
 {
+    if (!isLoggedIn()) {  
+        echo compileTemplate("wrapper.php", [ 
+            'content' => compileTemplate('login.php', [
+                'info' => $_GET['info'] ?? '',
+                'isRegistration' => isset($_GET['isRegistration']),
+                'url' => getPathWithId($_SERVER['REQUEST_URI']), 
+            ]),  
+            'isAuthorized' => false,
+        ]);
+        return;
+    }
     $languageId = $_GET['id'] ?? '';
     $pdo = getConnection();
 
@@ -272,18 +323,19 @@ function languagesHandler()
 
     $statement = $pdo->prepare('SELECT * FROM `countryLanguages`
     JOIN `languages` ON languageId = languages.id
-    WHERE countryId = ?'); 
+    WHERE countryId = ?');
     $statement->execute([$languageId]);
     $language = $statement->fetchAll(PDO::FETCH_ASSOC);
 
 
     $languageTemplate = compileTemplate('./nyelvek.php', [
         'language' => $language,
-        'country' => $country]);
-        echo compileTemplate('./wrapper.php', [
-            'innerTemplate' => $languageTemplate,
-            'activeLink' => '/nyelvek-megtekintese'
-        ]);
+        'country' => $country
+    ]);
+    echo compileTemplate('./wrapper.php', [
+        'content' => $languageTemplate,
+        'isAuthorized' => true,
+    ]);
 }
 
 function getConnection()
@@ -297,6 +349,7 @@ function getConnection()
 
 function registrationHandler()
 {
+
     $pdo = getConnection();
     $statment = $pdo->prepare(
         "INSERT INTO `users` (`email`, `password`, `createdAt`) 
@@ -308,9 +361,7 @@ function registrationHandler()
         time()
     ]);
 
-    header('Location: /reglog?sikerreg=1');
-
-// INSERT INTO `users` (`id`, `email`, `password`, `createdAt`) VALUES (NULL, 'peldaemail@email.hu', 'password', '123');
+    header('Location: ./reglog' . '&info=registrationSuccessful'); 
 }
 
 function loginHandler()
@@ -319,33 +370,66 @@ function loginHandler()
     $statement = $pdo->prepare("SELECT * FROM users WHERE email = ?");
     $statement->execute([$_POST["email"]]);
     $user = $statement->fetch(PDO::FETCH_ASSOC);
-
-    if(!$user) {
-        echo "invalidCredentials";
-        return;
-    }
-    $isVerified = password_verify($_POST['password'], $user["password"]);
-    if(!$isVerified) {
-        echo "invalidCredentials";
-        return;
-    }
-    session_start();  
-    $_SESSION['userId'] = $user['id']; 
     
+    if (!$user) {
+        header('Location: ./reglog' . '&info=invalidCredentials');  
+        return;
+    }
 
-    header('Location: /reglog?sikerlog=1');
+    $isVerified = password_verify($_POST['password'], $user["password"]);
 
+    if (!$isVerified) {
+        header('Location: ./reglog' . '&info=invalidCredentials'); 
+        return;
+    }
+
+    session_start();
+    $_SESSION['userId'] = $user['id'];
+    header('Location: ' . getPathWithId($_SERVER['HTTP_REFERER']));
+}
+
+function logoutHandler() 
+{    
+    if(!isset($_SESSION)) 
+    { 
+        session_start(); 
+    }
+    else
+    {
+        session_destroy();
+        session_start(); 
+    }
+    $params = session_get_cookie_params(); 
+    setcookie(session_name(),  '', 0, $params['path'], $params['domain'], $params['secure'], isset($params['httponly']));
+    session_destroy(); 
+    header('Location: ' . $_SERVER['HTTP_REFERER']);   
+}
+
+function isLoggedIn(): bool
+{
+    if (!isset($_COOKIE[session_name()])) {
+        return false;
+    }
+
+    if(!isset($_SESSION)) 
+    { 
+        session_start(); 
+    }
+
+    if (!isset($_SESSION['userId'])) {
+        return false;
+    }
+
+    return true;
 }
 
 function reglogHandler()
 {
-    $sikerreg = isset($_GET['sikerreg']);
-    $sikerlog = isset($_GET['sikerlog']);
-    $registerTemplate = compileTemplate('./login.php' ,[
-        'sikerreg' => $sikerreg,
-        'sikerlog' => $sikerlog]);
-    echo compileTemplate("./wrapper.php", [
-        'innerTemplate' => $registerTemplate,
-        'activeLink' => '/register'
-    ]);
+    echo compileTemplate("wrapper.php", [ 
+        'content' => compileTemplate('login.php', [
+            'info' => $_GET['info'] ?? '',
+            'url' => getPathWithId($_SERVER['REQUEST_URI']), 
+            'isRegistration' => isset($_GET['isRegistration']),
+        ]),  
+        'isAuthorized' => isLoggedIn()]);
 }
